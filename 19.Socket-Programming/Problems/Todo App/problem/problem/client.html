@@ -1,0 +1,72 @@
+<!-- no need to change the prewritten code.
+complete the script tag code. -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Task Management App</title>
+</head>
+
+<body>
+    <div id="task-form">
+        <!-- Create a form to add new tasks -->
+        <form id="create-task-form">
+            <input type="text" id="task-text" placeholder="Enter a new task" required>
+            <button id="create-task" type="submit">Add Task</button>
+        </form>
+    </div>
+
+    <div id="task-list">
+        <!-- Tasks will be displayed here -->
+    </div>
+
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io.connect('http://localhost:3000');
+
+        // -------------------write your code here.--------------------
+
+        const inputText = document.getElementById("task-text");
+        const submitButton = document.getElementById("create-task");
+        const taskList = document.getElementById("task-list");
+
+        // Append new message 
+        submitButton.addEventListener("click", () => {
+            const message = inputText.value;
+
+            if(message) {
+                socket.emit("new_message", message);
+
+                const messageElement = document.createElement("div");
+                messageElement.innerHTML = `<p> ${message} </p> <button id="update"}>Update</button> <button id="delete"}>delete</button>`;
+
+                taskList.appendChild(messageElement);
+
+                inputText.value = "";
+            }
+        })
+
+        // Broadcast messages to every users.
+        socket.on("broadcast_message", (messageObject) => {
+            const messageElement = document.createElement("div");
+            messageElement.innerHTML = `<p> ${messageObject.message} </p> <button id="update"}>Update</button> <button id="delete"}>delete</button>`;
+
+            taskList.appendChild(messageElement);
+        })
+
+        // Display old messages.
+        socket.on("load_messages", (messages) => {
+            console.log(messages, "messagess....");
+            messages.forEach(message => {
+                const messageElement = document.createElement("div");
+                messageElement.innerHTML = `<p> ${message.message} </p> <button id="update"}>Update</button> <button id="delete"}>delete</button>`;
+
+                taskList.appendChild(messageElement);
+            });
+        });
+
+    </script>
+</body>
+
+</html>

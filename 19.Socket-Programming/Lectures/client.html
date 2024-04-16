@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+</head>
+<body>
+    <h1>Welcome to Chat Application</h1>
+
+    <div id="msg__lt">
+        <!-- Here the messages will come. -->
+    </div>
+    
+    <input type="text" id="msg__inp">
+    <button id="sd__btn">Send</button>
+
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+
+    <script>
+        const socket = io.connect("http://localhost:3000");
+        const username = prompt("Enter your name: ");
+
+        socket.emit("join", username);
+
+        // Get the elements to update.
+        let messageInput = document.getElementById("msg__inp");
+        let sendButton = document.getElementById("sd__btn");
+        let messageList = document.getElementById("msg__lt");
+
+        sendButton.addEventListener("click", () => {
+            let message = messageInput.value;
+            
+            if(message) {
+                socket.emit("new_message", message);
+
+                const messageElement = document.createElement("div");
+                messageElement.innerHTML = username + ": " + message;
+                messageList.appendChild(messageElement);
+
+                messageInput.value = "";
+            }
+        });
+
+        // Display the old messages if it has.
+        socket.on("load_messages", (messages) => {
+            messages.forEach(message => {
+                const messageElement = document.createElement("div");
+                messageElement.innerHTML = message.timeStramp + " " + message.username + ": " + message.message;
+                messageList.appendChild(messageElement);
+            });
+        })
+
+        // Broadcast the messages to every users.
+        socket.on("broadcast_message", (data) => {
+            console.log(data, "dataa...");
+            const messageElement = document.createElement("div");
+            messageElement.innerHTML = data.username + ": " + data.message;
+            messageList.appendChild(messageElement);
+        })
+    </script>
+</body>
+</html>
